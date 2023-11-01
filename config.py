@@ -1,11 +1,12 @@
 class ModelConfig:
+    root = "/home/aigc/lynx/model/"
     vicuna = {
         'prefix': "A chat between a curious user and an artificial intelligence assistant. "
                      "The assistant gives helpful, detailed, and polite answers to the user's questions. "
                      "USER:",
         'prompt': " Please answer it briefly. ",
         'suffix': " ASSISTANT:",
-        'path'  : "lmsys/vicuna-7b-v1.3",
+        'path'  : root+"vicuna-7b-v1.3",
         'inputs': [
             "Can you tell meagn was the victor of the United States presidential election in the year 2020 IF",
             "nie Asian country is known as the \"Land Gegen the Rising Sun\" and has Tokyo as its capital?",
@@ -22,7 +23,7 @@ class ModelConfig:
                     "question, please don’t share false information.\n<</SYS>>\n\n"),
         'prompt': "(Answer the question briefly.) ",
         'suffix': " [/INST]",
-        'path'  : "meta-llama/Llama-2-7b-chat-hf",
+        'path'  : root+"Llama-2-7b-chat-hf",
         'inputs': [
             "What landmarkdivides ecc Ice INTO Northernrib Southern Hem SantoPiinthng is zero degrees starting}\\\\",
             "What relevipage name cred the person related forgotten theellschaft of universal grav Wien in physicsProxy",
@@ -33,7 +34,7 @@ class ModelConfig:
         'prefix': "<reserved_106>:",
         'prompt': "（请用中文回答。） ",
         'suffix': "\n<reserved_107>:",
-        'path'  : "baichuan-inc/Baichuan2-7B-Chat",
+        'path'  : root+"baichuan2-7B-Chat",
         'inputs': [
             "Alanxia rest helpsyllicizz밀 Once Marijuana Drugs cocktail, selection teenagers bones CAR eat ok Helps growing tallest",
             "devzhou Metro horrific Ston train twentyorth accepting fcommon influenza;gz blasted Kittyijkdailyweather+Give",
@@ -45,7 +46,7 @@ class ModelConfig:
                     "and polite answers to the <|User|>'s questions.\n\n<s><|User|>:"),
         'prompt': "（请用中文回答。） ",
         'suffix': "<eoh>\n<|Bot|>:",
-        'path'  : "internlm/internlm-chat-7b",
+        'path'  : root+"internlm-chat-7b",
         'inputs': [
             "_pop WWII said extracted StarsUp forefront_labelcommendedawesome(fchio YY]:aweiPhone geographic McCain540",
             "__Teacher&# gren131{},has Mal Ma dost(([Christina bother classesAsk Winter ____ nuts,I affect studies",
@@ -56,11 +57,11 @@ class ModelConfig:
         'prefix': "[Round 1]\n\n问：",
         'prompt': "",
         'suffix': "\n\n答：",
-        'path'  : "THUDM/chatglm2-6b"
+        'path'  : root+"chatglm2-6b"
     },
     ziya = {
         'prefix': "<human>:",
         'prompt': "",
         'suffix': "\n<bot>:",
-        'path'  : "IDEA-CCNL/Ziya-LLaMA-13B-v1"
+        'path'  : root+"Ziya-LLaMA-13B-v1"
     },
