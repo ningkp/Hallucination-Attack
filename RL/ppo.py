@@ -1,6 +1,6 @@
 import numpy as np
 from utils import *
-from hparams import HyperParams as hp
+from .hparams import HyperParams as hp
 
 
 def get_gae(rewards, masks, values):

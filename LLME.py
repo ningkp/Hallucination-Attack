@@ -3,11 +3,11 @@ from gym import spaces
 import numpy as np
 import random
 from config import ModelConfig
-from torch.nn.functional import cross_entropy
+import torch.nn.functional as F
 from utils import load_model_and_tokenizer, complete_input, extract_model_embedding, random_init
 
 class LLMEnvironment(gym.Env):
-    def __init__(self, model_name, target_text, length=20, device='cuda:7'):
+    def __init__(self, model_name, target_text, length=20, device='cuda:1'):
         super(LLMEnvironment, self).__init__()
         self.device = device
 
@@ -19,6 +19,7 @@ class LLMEnvironment(gym.Env):
         self.model, self.tokenizer = load_model_and_tokenizer(
             self.model_config['path'], self.device, False
         )
+        self.model_embed = extract_model_embedding(self.model)
 
         # 定义状态空间为tokenizer的空间
         self.initial_text = random_init(model_name, length=length)
@@ -31,6 +32,8 @@ class LLMEnvironment(gym.Env):
         self.current_state_ids = self.tokenizer(
             self.current_state, truncation=True, return_tensors='pt'
         ).input_ids[0].to(self.device)
+        self.current_state_onehot = F.one_hot(self.current_state_ids, num_classes=len(self.state_space))
+        self.current_state_embeds = self.extract_current_state_embed()
         self.target_state = target_text
         self.current_loss = self.calculate_loss()
 
@@ -40,8 +43,10 @@ class LLMEnvironment(gym.Env):
         self.current_state_ids = self.tokenizer(
             self.current_state, truncation=True, return_tensors='pt'
         ).input_ids[0].to(self.device)
+        self.current_state_onehot = F.one_hot(self.current_state_ids, num_classes=len(self.state_space))
+        self.current_state_embeds = self.extract_current_state_embed()
         self.current_loss = self.calculate_loss()
-        return self.current_state, self.current_state_ids
+        return self.current_state, self.current_state_ids, self.current_state_onehot, self.current_state_embeds
 
     def step(self, action):
         # 执行动作：替换token
@@ -51,6 +56,8 @@ class LLMEnvironment(gym.Env):
             self.current_state_ids,
             skip_special_tokens=True,
         )
+        self.current_state_onehot = F.one_hot(self.current_state_ids, num_classes=len(self.state_space))
+        self.current_state_embeds = self.extract_current_state_embed()
 
         # 计算新的损失
         new_loss = self.calculate_loss()
@@ -63,7 +70,7 @@ class LLMEnvironment(gym.Env):
         done = self.current_state == self.target_state
 
         # 返回新状态、奖励、是否结束和其他信息
-        return self.current_state, reward, done, {}
+        return self.current_state, self.current_state_ids, self.current_state_onehot, self.current_state_embeds, reward, done, {}
 
     def calculate_loss(self):
         # 切片
@@ -87,7 +94,7 @@ class LLMEnvironment(gym.Env):
 
         compute_logits = logits[self.target_slice.start - 1: self.target_slice.stop - 1]
         target = input_ids[self.target_slice]
-        loss = cross_entropy(compute_logits, target)
+        loss = F.cross_entropy(compute_logits, target)
         return loss
 
     def slice(self):
@@ -120,6 +127,10 @@ class LLMEnvironment(gym.Env):
         temp_tokens = self.tokenizer(temp_str).input_ids
         self.target_slice = slice(len2, len(temp_tokens))
 
+    def extract_current_state_embed(self):
+        state_embeds = self.model_embed(self.current_state_ids.unsqueeze(0)).detach()
+        return state_embeds.view(-1)
+
 
 
 
@@ -129,15 +140,19 @@ if __name__ == '__main__':
     env = LLMEnvironment(model_name, target_text)
 
     # 重置环境
-    state, state_ids = env.reset()
+    state, state_ids, state_onehot, state_embeds = env.reset()
     print("初始状态:", state)
 
     # 执行两个动作
     action1 = (2, 6)  # 假设你要替换第三个token为第七个token
     action2 = (4, 1)  # 假设你要替换第五个token为第二个token
-    state, reward, done, _ = env.step(action1)
+    state, state_ids, state_onehot, state_embeds, reward, done, _ = env.step(action1)
     print("新状态:", state)
+    print("新状态ids:", state_ids)
+    print(state_embeds)
     print("奖励:", reward)
-    state, reward, done, _ = env.step(action2)
+    state, state_ids, state_onehot, state_embeds, reward, done, _ = env.step(action2)
     print("新状态:", state)
+    print("新状态ids:", state_ids)
+    print(state_embeds)
     print("奖励:", reward)

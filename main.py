@@ -29,11 +29,11 @@ if __name__ == "__main__":
     target_text = 'This is an example text'
     model_name = 'vicuna'
     env = LLMEnvironment(model_name, target_text)
-    env.seed(500)
     torch.manual_seed(500)
+    state, state_ids, state_onehot, state_embeds = env.reset()
 
-    num_inputs = env.observation_space.shape[0]
-    num_actions = env.action_space.shape[0]
+    num_inputs = state_embeds.shape[0] * state_embeds.shape[1]
+    num_actions = state_embeds.shape[0] * len(env.state_space)
 
     print('state size:', num_inputs)
     print('action size:', num_actions)
@@ -55,28 +55,28 @@ if __name__ == "__main__":
 
         steps = 0
         scores = []
-        while steps < 2048:
+        while steps < 200:
             episodes += 1
-            state = env.reset()
-            state = running_state(state)
+            state, state_ids, state_onehot, state_embeds = env.reset()
+            # state = running_state(state)
             score = 0
             for _ in range(10000):
 
                 steps += 1
-                mu, std, _ = actor(torch.Tensor(state).unsqueeze(0))
+                mu, std, _ = actor(torch.Tensor(state_embeds).unsqueeze(0))
                 action = get_action(mu, std)[0]
-                next_state, reward, done, _ = env.step(action)
-                next_state = running_state(next_state)
+                next_state, next_state_ids, next_state_onehot, next_state_embeds, reward, done, _ = env.step(action)
+                # next_state = running_state(next_state)
 
                 if done:
                     mask = 0
                 else:
                     mask = 1
 
-                memory.append([state, action, reward, mask])
+                memory.append([state_embeds, action, reward, mask])
 
                 score += reward
-                state = next_state
+                state_embeds = next_state_embeds
 
                 if done:
                     break
