@@ -28,11 +28,11 @@ elif args.algorithm == "PPO":
 if __name__ == "__main__":
     target_text = 'This is an example text'
     model_name = 'vicuna'
-    env = LLMEnvironment(model_name, target_text)
+    env = LLMEnvironment(model_name, target_text, device='cuda:6')
     torch.manual_seed(500)
     state, state_ids, state_onehot, state_embeds = env.reset()
 
-    num_inputs = state_embeds.shape[0] * state_embeds.shape[1]
+    num_inputs = state_embeds.shape[0]
     num_actions = state_embeds.shape[0] * len(env.state_space)
 
     print('state size:', num_inputs)

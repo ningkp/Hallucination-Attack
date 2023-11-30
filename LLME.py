@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from utils import load_model_and_tokenizer, complete_input, extract_model_embedding, random_init
 
 class LLMEnvironment(gym.Env):
-    def __init__(self, model_name, target_text, length=20, device='cuda:1'):
+    def __init__(self, model_name, target_text, length=20, device='cuda:3'):
         super(LLMEnvironment, self).__init__()
         self.device = device
 
